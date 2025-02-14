@@ -5,22 +5,6 @@ env:
 
 on:
   push:
-    tags-ignore:
-      - '*.*.*'
-      - 'v*.*.*'
-    branches:
-      - '*'
-    paths:
-      - '*'
-      - '**.ino'
-      - '**.cpp'
-      - '**.hpp'
-      - '**.h'
-      - '**.c'
-      - '**.inl'
-      - '**clang-format-check.yml'
-      - '**.clang-format'
-  pull_request:
     paths:
       - '**.ino'
       - '**.cpp'
@@ -29,8 +13,14 @@ on:
       - '**.c'
       - '**.inl'
       - '**clang-format-check.yml'
-      - '**.clang-format'
-  workflow_dispatch:
+    pull_request:
+      - '**.ino'
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**.inl'
+      - '**clang-format-check.yml'
 
 jobs:
   formatting-check:

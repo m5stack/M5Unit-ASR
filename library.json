@@ -1,0 +1,22 @@
+{
+    "name": "M5UnitASR",
+    "description": "Library for M5Stack M5Unit ASR",
+    "keywords": "M5UnitASR",
+    "authors": {
+        "name": "M5Stack",
+        "url": "http://www.m5stack.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/m5stack/M5Unit-ASR.git"
+    },
+    "version": "0.0.1",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "espressif32",
+        "native"
+    ]
+
+}
