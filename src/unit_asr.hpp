@@ -112,6 +112,13 @@ public:
     String searchCommandWord(uint8_t commandNum);
 
     /**
+     * @brief Retrieves the firmware version of the ASR unit.
+     *
+     * @return The firmware version number
+     */
+    uint8_t getFirmwareVersion();
+
+    /**
      * @brief Processes any pending tick callbacks.
      *
      * Checks and executes any scheduled tick-based operations for the ASR unit.
@@ -140,6 +147,7 @@ private:
     HardwareSerial *_serial;
     String rawMessage;
     uint8_t commandNum;
+    uint8_t msg;
     std::map<uint8_t, std::pair<String, CommandHandler>> commandList = {
         {0x00, {"Unknown command word", nullptr}},
         {0x01, {"up", nullptr}},
@@ -183,6 +191,19 @@ private:
         {0x43, {"medium volume", nullptr}},
         {0x44, {"minimum volume", nullptr}},
         {0x45, {"check firmware version", nullptr}},
+        // Only for Module ASR
+        {0x50, {"PA2 high level", nullptr}},
+        {0x51, {"PA2 low level", nullptr}},
+        {0x52, {"PA3 high level", nullptr}},
+        {0x53, {"PA3 low level", nullptr}},
+        {0x54, {"PA4 high level", nullptr}},
+        {0x55, {"PA4 low level", nullptr}},
+        {0x56, {"PA5 high level", nullptr}},
+        {0x57, {"PA5 low level", nullptr}},
+        {0x58, {"PC4 high level", nullptr}},
+        {0x59, {"PC4 low level", nullptr}},
+        {0x5A, {"inversion level", nullptr}},
+        // End Only for Module ASR
         {0xFE, {"Announce", nullptr}},
         {0xFF, {"Hi,M Five", nullptr}},
     };

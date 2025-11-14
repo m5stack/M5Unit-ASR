@@ -1,5 +1,3 @@
----
-Language:        Cpp
 BasedOnStyle:  Google
 AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
@@ -84,7 +82,7 @@ IncludeIsMainRegex: '([-_](test|unittest))?$'
 IncludeIsMainSourceRegex: ''
 IndentCaseLabels: true
 IndentGotoLabels: true
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 IndentWidth:     4
 IndentWrappedFunctionNames: false
 JavaScriptQuotes: Leave
@@ -164,4 +162,3 @@ StatementMacros:
 TabWidth:        4
 UseCRLF:         false
 UseTab:          Never
-...

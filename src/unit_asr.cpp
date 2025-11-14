@@ -21,41 +21,42 @@ bool ASRUnit::update()
         return 0;
     }
 
-    while (_serial->available() >= 2) {
-        uint8_t header[2];
-        _serial->readBytes(header, 2);
+    while (_serial->available() >= 5) {  // 至少需要5个字节
+        uint8_t data[6];
+        _serial->readBytes(data, 5);
 
-        if (header[0] != 0xAA || header[1] != 0x55) {
-            continue;
-        }
-
-        unsigned long startTime = millis();
-        while (_serial->available() < 3) {
-            if (millis() - startTime > 100) {
-                return 0;
+        if (data[0] == 0xAA && data[1] == 0x55 && data[3] == 0x55 && data[4] == 0xAA) {
+            commandNum = data[2];
+            rawMessage = "";
+            for (int i = 0; i < 5; i++) {
+                char buffer[6];
+                snprintf(buffer, sizeof(buffer), "0x%02X ", data[i]);
+                rawMessage += buffer;
             }
-        }
-
-        uint8_t message[3];
-        _serial->readBytes(message, 3);
-
-        rawMessage = "";
-        char buffer[6];
-        sprintf(buffer, "0x%02X 0x%02X ", header[0], header[1]);
-        rawMessage += buffer;
-        for (int i = 0; i < 3; i++) {
-            sprintf(buffer, "0x%02X ", message[i]);
-            rawMessage += buffer;
-        }
-
 #ifdef UNIT_ASR_DEBUG
-        Serial.println("Received data: " + rawMessage);
+            Serial.println("Received data: " + rawMessage);
 #endif
-
-        if (message[1] == 0x55 && message[2] == 0xAA) {
-            commandNum = message[0];
             checkTickCallback();
             return 1;
+        } else if (data[0] == 0xAA && data[1] == 0x55 && data[4] == 0x55) {
+            if (_serial->available() >= 1) {
+                _serial->readBytes(&data[5], 1);
+                if (data[5] == 0xAA) {
+                    commandNum = data[2];
+                    msg        = data[3];
+                    rawMessage = "";
+                    for (int i = 0; i < 6; i++) {
+                        char buffer[6];
+                        snprintf(buffer, sizeof(buffer), "0x%02X ", data[i]);
+                        rawMessage += buffer;
+                    }
+#ifdef UNIT_ASR_DEBUG
+                    Serial.println("Received data: " + rawMessage);
+#endif
+                    checkTickCallback();
+                    return 1;
+                }
+            }
         }
     }
 
@@ -136,6 +137,12 @@ int8_t ASRUnit::searchCommandNum(const String &commandWord)
 String ASRUnit::searchCommandWord(uint8_t commandNum)
 {
     return commandList.count(commandNum) ? commandList[commandNum].first : "Unknown command word";
+}
+
+uint8_t ASRUnit::getFirmwareVersion()
+{
+    if (msg == 0) sendComandNum(0x45);
+    return msg;
 }
 
 void ASRUnit::checkTickCallback()
