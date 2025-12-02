@@ -17,16 +17,28 @@
 
 ASRUnit asr;
 
+#define UNIT_ASR
+// #define MODULE_ASR
+
+#ifdef MODULE_ASR
+    #define MODULE_ASR_TX_PIN 27
+    #define MODULE_ASR_RX_PIN 34
+#endif
+
 void setup()
 {
     auto cfg            = M5.config();
     cfg.serial_baudrate = 115200;
     M5.begin(cfg);
+#ifdef UNIT_ASR
     int8_t port_a_pin1 = -1, port_a_pin2 = -1;
     port_a_pin1 = M5.getPin(m5::pin_name_t::port_a_pin1);
     port_a_pin2 = M5.getPin(m5::pin_name_t::port_a_pin2);
     Serial.printf("getPin: RX:%d TX:%d\n", port_a_pin1, port_a_pin2);
     asr.begin(&Serial1, 115200, port_a_pin1, port_a_pin2);
+#elif defined MODULE_ASR
+    asr.begin(&Serial1, 115200, MODULE_ASR_RX_PIN, MODULE_ASR_TX_PIN);
+#endif
 }
 
 void myCommandHandler()
@@ -38,11 +50,12 @@ void loop()
 {
     M5.update();
     if (asr.update()) {
-        Serial.printf("Command word: %s\n", asr.getCurrentCommandWord());
+        Serial.printf("Command word: %s\n", asr.getCurrentCommandWord().c_str());
         Serial.printf("Command number: 0x%X\n", asr.getCurrentCommandNum());
         Serial.print("Raw message:");
         Serial.println(asr.getCurrentRawMessage());
         Serial.printf("Have command handler: %s\n", asr.checkCurrentCommandHandler() ? "Yes" : "No");
+        Serial.println("-----");
     }
     if (M5.BtnA.wasPressed()) {
         asr.printCommandList();
