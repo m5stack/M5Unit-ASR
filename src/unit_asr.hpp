@@ -7,14 +7,21 @@
 #ifndef _UNIT_ASR_H_
 #define _UNIT_ASR_H_
 
-#include <Arduino.h>
 #include <map>
 #include <functional>
-#include "driver/uart.h"
+#include <string>
+
+#if defined(ARDUINO)
+    #include <Arduino.h>
+#else
+    #include "freertos/FreeRTOS.h"
+    #include "freertos/task.h"
+    #include "driver/uart.h"
+    #include "esp_log.h"
+#endif
 
 #define UNIT_ASR_BAUD 115200
-
-// #define UNIT_ASR_DEBUG
+#define UNIT_ASR_DEBUG
 
 class ASRUnit {
 public:
@@ -31,8 +38,11 @@ public:
      * @param RX The GPIO pin number for receiving data, defaults to 16
      * @param TX The GPIO pin number for transmitting data, defaults to 17
      */
+#if defined(ARDUINO)
     void begin(HardwareSerial *serial = &Serial1, int baud = UNIT_ASR_BAUD, uint8_t RX = 16, uint8_t TX = 17);
-
+#else
+    void begin(uart_port_t uart_num = UART_NUM_1, int baud = UNIT_ASR_BAUD, int RX = 16, int TX = 17);
+#endif
     /**
      * @brief Sends a command number to the ASR unit.
      *
@@ -48,14 +58,14 @@ public:
      *
      * @return The raw message string received from the ASR unit
      */
-    String getCurrentRawMessage();
+    std::string getCurrentRawMessage();
 
     /**
      * @brief Gets the currently recognized command word.
      *
      * @return The string representation of the current command word
      */
-    String getCurrentCommandWord();
+    std::string getCurrentCommandWord();
 
     /**
      * @brief Gets the current command number.
@@ -85,7 +95,7 @@ public:
      * @param handler Optional callback function to execute when the command is recognized
      * @return true if the command was successfully added, false otherwise
      */
-    bool addCommandWord(uint8_t commandNum, const String &commandWord, CommandHandler handler = nullptr);
+    bool addCommandWord(uint8_t commandNum, const std::string &commandWord, CommandHandler handler = nullptr);
 
     /**
      * @brief Removes a command word from the command list.
@@ -93,7 +103,7 @@ public:
      * @param commandWord The command word to remove from the recognition list
      * @return true if the command was successfully removed, false otherwise
      */
-    bool removeCommandWord(const String &commandWord);
+    bool removeCommandWord(const std::string &commandWord);
 
     /**
      * @brief Searches for the command number associated with a command word.
@@ -101,7 +111,7 @@ public:
      * @param commandWord The command word to search for
      * @return The associated command number if found, -1 if not found
      */
-    int8_t searchCommandNum(const String &commandWord);
+    int8_t searchCommandNum(const std::string &commandWord);
 
     /**
      * @brief Searches for the command word associated with a command number.
@@ -109,7 +119,7 @@ public:
      * @param commandNum The command number to search for
      * @return The associated command word if found, empty string if not found
      */
-    String searchCommandWord(uint8_t commandNum);
+    std::string searchCommandWord(uint8_t commandNum);
 
     /**
      * @brief Retrieves the firmware version of the ASR unit.
@@ -144,11 +154,16 @@ public:
     void printCommandList();
 
 private:
+#if defined(ARDUINO)
     HardwareSerial *_serial;
-    String rawMessage;
+#else
+    uart_port_t _uart_num;
+    bool _is_initialized = false;
+#endif
+    std::string rawMessage;
     uint8_t commandNum;
     uint8_t msg;
-    std::map<uint8_t, std::pair<String, CommandHandler>> commandList = {
+    std::map<uint8_t, std::pair<std::string, CommandHandler>> commandList = {
         {0x00, {"Unknown command word", nullptr}},
         {0x01, {"up", nullptr}},
         {0x02, {"down", nullptr}},
